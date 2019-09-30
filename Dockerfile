@@ -1,8 +1,8 @@
-FROM nginx:alpine
+FROM nginx:1.17.4-alpine
 
 RUN set -x && \
   apk --update upgrade                                  &&  \
-  apk add git bash fcgiwrap spawn-fcgi wget             &&  \
+  apk add git bash fcgiwrap spawn-fcgi wget git-daemon  &&  \
 
   adduser git -h /var/lib/git -D                        &&  \
   adduser nginx git                                     &&  \
