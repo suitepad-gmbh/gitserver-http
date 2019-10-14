@@ -1,3 +1,6 @@
+fastcgi_cache_path /etc/nginx/cache levels=1:2 keys_zone=gitserver_http:800m inactive=30m;
+fastcgi_cache_key "$scheme$request_method$host$request_uri";
+
 server {
 	server_name       _;
 	listen 80         default_server;
@@ -9,17 +12,21 @@ server {
   }
 
   location ~ ^.*\.git/objects/([0-9a-f]+/[0-9a-f]+|pack/pack-[0-9a-f]+.(pack|idx))$ {
-    root            /var/lib/git;
+    root                /var/lib/git;
+    fastcgi_cache       gitserver_http:
+    fastcgi_cache_valid 1m
   }
 
   location ~ ^.*\.git/(HEAD|info/refs|objects/info/.*|git-(upload|receive)-pack)$ {
-    include         fastcgi_params;
-    fastcgi_param   SCRIPT_FILENAME /usr/libexec/git-core/git-http-backend;
-    fastcgi_param   GIT_HTTP_EXPORT_ALL "";
-    fastcgi_param   GIT_PROJECT_ROOT /var/lib/git;
-    fastcgi_param   PATH_INFO $uri;
-    fastcgi_param   REMOTE_USER $remote_user;
-    fastcgi_pass    unix:/var/run/fcgiwrap.socket;
+    include             fastcgi_params;
+    fastcgi_param       SCRIPT_FILENAME /usr/libexec/git-core/git-http-backend;
+    fastcgi_param       GIT_HTTP_EXPORT_ALL "";
+    fastcgi_param       GIT_PROJECT_ROOT /var/lib/git;
+    fastcgi_param       PATH_INFO $uri;
+    fastcgi_param       REMOTE_USER $remote_user;
+    fastcgi_pass        unix:/var/run/fcgiwrap.socket;
+    fastcgi_cache       gitserver_http:
+    fastcgi_cache_valid 1m
   }
 
 	location / {
