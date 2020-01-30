@@ -21,7 +21,7 @@ server {
     fastcgi_ignore_headers  Cache-Control Expires Set-Cookie;
   }
 
-  location ~ ^.*\.git/(HEAD|info/refs|objects/info/.*|git-(upload|receive)-pack)$ {
+  location ~ ^.*\.git/(info/refs|objects/info/.*|git-(upload|receive)-pack)$ {
     include                 fastcgi_params;
     fastcgi_param           SCRIPT_FILENAME /usr/libexec/git-core/git-http-backend;
     fastcgi_param           GIT_HTTP_EXPORT_ALL "";
