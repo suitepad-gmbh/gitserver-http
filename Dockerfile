@@ -20,4 +20,3 @@ ADD ./etc /etc
 ADD ./entrypoint.sh /usr/local/bin/entrypoint
 
 ENTRYPOINT [ "entrypoint" ]
-CMD [ "-start" ]
