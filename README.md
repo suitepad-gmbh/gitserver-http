@@ -5,77 +5,26 @@
 
 ## Usage
 
-To run a git server without any repositories configured in advance but allowing them to be saved into `./repositories`: 
- 
-  ```sh
-  docker run \
-    -d  \                                 # deamonize
-    -v `pwd`/repositories:/var/lib/git \  # mount the volume
-    -p "8080:80" \                        # expose the port 
-    cirocosta/gitserver-http
-  ```
+In order to test serving repositories from ./example/initial, do the following:
+1. Build an image based on your nginx config.
 
-Now, initialize a bare repository:
+```sh
+docker build -t local-gitserver-http .
+```
 
-  ```sh
-  cd repositories
-  git init --bare repos/myrepo.git
-  ```
+2. Run the image to serve the repos.
+```sh
+make example
+```
 
-and then, just clone it somewhere else:
+Then you can either query your repos, like:
+```sh
+curl localhost:8080/myrepo.git/info/refs
+```
 
-  ```sh
-  cd /tmp
-  git clone http://localhost:8080/myrepo.git
-  cd myrepo 
-  ```
+Or actually clone a repo:
+```sh
+git clone http://localhost:8080/myrepo.git
+```
 
-
-### Pre-Initialization
-
-Git servers work with bare repositories. This image provides the utility of initializing some pre-configured repositories in advance. Just add them to `/var/lib/initial` and then run the container. For instance, having the tree:
-
-  ```
-  .
-  └── initial
-      └── initial
-          └── repo1
-              └── file.txt
-  ```
-
-and then executing
-
-  ```sh
-  docker run \
-    -d  \                                 # deamonize
-    -v `pwd`/initial:/var/lib/initial \   # mount the initial volume
-    -p "8080:80" \                        # expose the port 
-    cirocosta/gitserver-http              # start git server and init repositories
-  ```
-
-will allow you to skip the `git init --bare` step and start with the repositories pre-"installed" there:
-
-  ```sh
-  git clone http://localhost/repo1.git
-  cd repo1 && ls
-  # file.txt
-  ```
-
-
-## Example
-
-to run the example:
-
-  ```sh
-  make example
-  ```
-
-
-This will create a git server http service on `:80`. Now you can clone the sample repository:
-
-
-  ```sh
-  git clone http://localhost:8080/repo1.git
-  ```
-
-
+While doing this, in the tab where you have `make example` executed, you'll be able to see whether your request hit the cache.
