@@ -1,5 +1,5 @@
-fastcgi_cache_path /etc/nginx/cache-get levels=1:2 keys_zone=gitserver_http_get:200m inactive=30m;
-fastcgi_cache_path /etc/nginx/cache-post levels=1:2 keys_zone=gitserver_http_post:2048m inactive=30m;
+fastcgi_cache_path /etc/nginx/cache-get levels=1:2 keys_zone=gitserver_http_get:200m inactive=2h;
+fastcgi_cache_path /etc/nginx/cache-post levels=1:2 keys_zone=gitserver_http_post:2048m inactive=2h;
 fastcgi_cache_key "$scheme$request_method$host$request_uri|$request_body";
 
 server {
