@@ -29,6 +29,17 @@ server {
     fastcgi_ignore_headers  Cache-Control Expires Set-Cookie;
   }
 
+  # GET the git repo HEAD file
+  location ~* ^.*\.git/HEAD$ {
+    include                 fastcgi_params;
+    fastcgi_param           SCRIPT_FILENAME /usr/libexec/git-core/git-http-backend;
+    fastcgi_param           GIT_HTTP_EXPORT_ALL "";
+    fastcgi_param           GIT_PROJECT_ROOT /var/lib/git;
+    fastcgi_param           PATH_INFO $uri;
+    fastcgi_param           REMOTE_USER $remote_user;
+    fastcgi_pass            unix:/var/run/fcgiwrap.socket;
+  }
+
   # POST requests caching
   location ~* ^.*\.git/git-upload-pack$ {
     include                 fastcgi_params;
