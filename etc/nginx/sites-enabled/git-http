@@ -14,6 +14,8 @@ server {
 
   # GET and HEAD requests caching
   location ~* ^.*\.git/info/refs.*$ {
+    sendfile                off;
+    proxy_buffering         on;
     include                 fastcgi_params;
     fastcgi_param           SCRIPT_FILENAME /usr/libexec/git-core/git-http-backend;
     fastcgi_param           GIT_HTTP_EXPORT_ALL "";
@@ -31,6 +33,8 @@ server {
 
   # GET the git repo HEAD file
   location ~* ^.*\.git/HEAD$ {
+    sendfile                on;
+    proxy_buffering         on;
     include                 fastcgi_params;
     fastcgi_param           SCRIPT_FILENAME /usr/libexec/git-core/git-http-backend;
     fastcgi_param           GIT_HTTP_EXPORT_ALL "";
@@ -42,6 +46,9 @@ server {
 
   # POST requests caching
   location ~* ^.*\.git/git-upload-pack$ {
+    sendfile                on;
+    sendfile_max_chunk      1m;
+    proxy_buffering         off;
     include                 fastcgi_params;
     fastcgi_param           SCRIPT_FILENAME /usr/libexec/git-core/git-http-backend;
     fastcgi_param           GIT_HTTP_EXPORT_ALL "";
