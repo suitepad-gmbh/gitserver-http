@@ -1,4 +1,4 @@
-fastcgi_cache_path /etc/nginx/cache-get levels=1:2 keys_zone=gitserver_http_get:200m inactive=2h;
+fastcgi_cache_path /etc/nginx/cache-get levels=1:2 keys_zone=gitserver_http_get:200m inactive=12h;
 fastcgi_cache_path /etc/nginx/cache-post levels=1:2 keys_zone=gitserver_http_post:2048m inactive=2h;
 fastcgi_cache_key "$scheme$request_method$host$request_uri|$request_body";
 
@@ -12,24 +12,28 @@ server {
     return 200 'ok';
   }
 
-  # GET and HEAD requests caching
+  # GET and HEAD requests caching - to check for updates
   location ~* ^.*\.git/info/refs.*$ {
-    include                 fastcgi_params;
-    fastcgi_param           SCRIPT_FILENAME /usr/libexec/git-core/git-http-backend;
-    fastcgi_param           GIT_HTTP_EXPORT_ALL "";
-    fastcgi_param           GIT_PROJECT_ROOT /var/lib/git;
-    fastcgi_param           PATH_INFO $uri;
-    fastcgi_param           REMOTE_USER $remote_user;
-    fastcgi_pass            unix:/var/run/fcgiwrap.socket;
-    fastcgi_cache           gitserver_http_get;
-    fastcgi_cache_methods   GET HEAD;
-    fastcgi_cache_use_stale updating error timeout;
-    fastcgi_cache_lock      on;
-    fastcgi_cache_valid     200 3m;
-    fastcgi_ignore_headers  Cache-Control Expires Set-Cookie;
+    include                    fastcgi_params;
+    fastcgi_buffer_size        1m;
+    fastcgi_buffers            33000 4k;
+    fastcgi_busy_buffers_size  128m;
+    fastcgi_cache              gitserver_http_get;
+    fastcgi_cache_lock         on;
+    fastcgi_cache_methods      GET HEAD;
+    fastcgi_cache_use_stale    updating error timeout;
+    fastcgi_cache_valid        200 3m;
+    fastcgi_ignore_headers     Cache-Control Expires Set-Cookie;
+    fastcgi_max_temp_file_size 0;
+    fastcgi_param              SCRIPT_FILENAME /usr/libexec/git-core/git-http-backend;
+    fastcgi_param              GIT_HTTP_EXPORT_ALL "";
+    fastcgi_param              GIT_PROJECT_ROOT /var/lib/git;
+    fastcgi_param              PATH_INFO $uri;
+    fastcgi_param              REMOTE_USER $remote_user;
+    fastcgi_pass               unix:/var/run/fcgiwrap.socket;
   }
 
-  # GET the git repo HEAD file
+  # GET the git repo HEAD file - for service status checks
   location ~* ^.*\.git/HEAD$ {
     include                 fastcgi_params;
     fastcgi_param           SCRIPT_FILENAME /usr/libexec/git-core/git-http-backend;
@@ -40,21 +44,28 @@ server {
     fastcgi_pass            unix:/var/run/fcgiwrap.socket;
   }
 
-  # POST requests caching
+  # POST requests caching - to fetch updates
   location ~* ^.*\.git/git-upload-pack$ {
-    include                 fastcgi_params;
-    fastcgi_param           SCRIPT_FILENAME /usr/libexec/git-core/git-http-backend;
-    fastcgi_param           GIT_HTTP_EXPORT_ALL "";
-    fastcgi_param           GIT_PROJECT_ROOT /var/lib/git;
-    fastcgi_param           PATH_INFO $uri;
-    fastcgi_param           REMOTE_USER $remote_user;
-    fastcgi_pass            unix:/var/run/fcgiwrap.socket;
-    fastcgi_cache           gitserver_http_post;
-    fastcgi_cache_methods   POST;
-    fastcgi_cache_use_stale updating error timeout;
-    fastcgi_cache_lock      on;
-    fastcgi_cache_valid     200 10m;
-    fastcgi_ignore_headers  Cache-Control Expires Set-Cookie;
+    include                    fastcgi_params;
+    sendfile_max_chunk         1m;
+    fastcgi_buffering          on;
+    fastcgi_buffer_size        64m;
+    fastcgi_buffers            66000 4k;
+    fastcgi_busy_buffers_size  256m;
+    fastcgi_cache              gitserver_http_post;
+    fastcgi_cache_lock         on;
+    fastcgi_cache_lock_age     10s;
+    fastcgi_cache_methods      POST;
+    fastcgi_cache_use_stale    updating error timeout;
+    fastcgi_cache_valid        200 10m;
+    fastcgi_ignore_headers     Cache-Control Expires Set-Cookie;
+    fastcgi_max_temp_file_size 0;
+    fastcgi_param              SCRIPT_FILENAME /usr/libexec/git-core/git-http-backend;
+    fastcgi_param              GIT_HTTP_EXPORT_ALL "";
+    fastcgi_param              GIT_PROJECT_ROOT /var/lib/git;
+    fastcgi_param              PATH_INFO $uri;
+    fastcgi_param              REMOTE_USER $remote_user;
+    fastcgi_pass               unix:/var/run/fcgiwrap.socket;
   }
 
   location / {
